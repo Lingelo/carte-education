@@ -3,12 +3,14 @@ import type { LatLngBounds } from 'leaflet';
 import type { Etablissement, UniversiteAggregate } from './types';
 import { useData } from './hooks/useData';
 import { useFilters } from './hooks/useFilters';
+import { timeAgo } from './utils/format';
 import { MapView } from './components/MapView';
 import { Header } from './components/Header';
 import { SearchBar } from './components/SearchBar';
 import { Filters } from './components/Filters';
 import { SchoolPanel } from './components/SchoolPanel';
 import { InsertionDetail } from './components/InsertionDetail';
+import { AboutModal } from './components/AboutModal';
 
 export default function App() {
   const { etabData, insertionData, loading, error } = useData();
@@ -32,6 +34,7 @@ export default function App() {
   const [hoveredSchool, setHoveredSchool] = useState<Etablissement | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [showInsertion, setShowInsertion] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
 
   // Schools with valid geolocation
   const geoEtablissements = useMemo(
@@ -138,8 +141,18 @@ export default function App() {
           <>
             <span className="text-gray-300">|</span>
             <span>{etabData.meta.total.toLocaleString('fr-FR')} etablissements</span>
+            {etabData.meta.generatedAt && (
+              <>
+                <span className="text-gray-300">|</span>
+                <span>{timeAgo(etabData.meta.generatedAt)}</span>
+              </>
+            )}
           </>
         )}
+        <span className="text-gray-300">|</span>
+        <button onClick={() => setShowAbout(true)} className="underline hover:text-gray-700">
+          A propos
+        </button>
       </div>
 
       {/* Desktop sidebar */}
@@ -188,6 +201,10 @@ export default function App() {
           universite={selectedUniversite}
           onClose={() => setSelectedUniversite(null)}
         />
+      )}
+
+      {showAbout && (
+        <AboutModal onClose={() => setShowAbout(false)} lastUpdate={etabData?.meta.generatedAt} />
       )}
     </div>
   );
